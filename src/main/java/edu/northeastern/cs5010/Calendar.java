@@ -132,7 +132,7 @@ public class Calendar {
     LocalTime start2 = e2.getStartTime();
     LocalTime end2 = e2.getEndTime() != null ? e2.getEndTime() : e2.getStartTime();
 
-    return !end1.isBefore(start2) && !end2.isBefore(start1);
+    return end1.isAfter(start2) && end2.isAfter(start1);
   }
 
   /**
@@ -264,6 +264,7 @@ public class Calendar {
    * @throws IllegalArgumentException if any generated instance would create a conflict
    */
   public void addRecurringEvent(Event template, RecurrencePattern pattern) {
+    String seriesId = java.util.UUID.randomUUID().toString();  // This line generates a unique ID
     LocalDate date = template.getStartDate();
     int count = 0;
 
@@ -275,6 +276,7 @@ public class Calendar {
             .location(template.getLocation())
             .description(template.getDescription())
             .visibility(template.getVisibility())
+            .recurringSeriesId(seriesId)
             .build();
 
         addEvent(instance);
@@ -340,7 +342,7 @@ public class Calendar {
     List<Event> toChange = new ArrayList<>();
 
     for (Event event : events) {
-      if (seriesId.equals(event.getRecurringSeriesId())) {
+      if (seriesId != null && seriesId.equals(event.getRecurringSeriesId())) {
         toChange.add(event);
       }
     }

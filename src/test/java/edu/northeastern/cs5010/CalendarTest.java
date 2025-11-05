@@ -211,10 +211,13 @@ class CalendarTest {
 
   @Test
   void testGetEventsOnDate() {
-    Event event1 = new Event.Builder("Event 1", testDate, testDate).build();
-    Event event2 = new Event.Builder("Event 2", testDate, testDate)
-        .startTime(LocalTime.of(10, 0))
-        .endTime(LocalTime.of(11, 0))
+    Event event1 = new Event.Builder("Morning Event", testDate, testDate)
+        .startTime(LocalTime.of(9, 0))
+        .endTime(LocalTime.of(10, 0))
+        .build();
+    Event event2 = new Event.Builder("Afternoon Event", testDate, testDate)
+        .startTime(LocalTime.of(14, 0))
+        .endTime(LocalTime.of(15, 0))
         .build();
     LocalDate otherDate = LocalDate.of(2025, 11, 16);
     Event event3 = new Event.Builder("Event 3", otherDate, otherDate).build();
