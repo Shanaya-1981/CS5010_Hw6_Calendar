@@ -1,0 +1,214 @@
+package edu.northeastern.cs5010;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Represents a calendar that holds events and enforces uniqueness rules.
+ * Calendars can optionally prevent time conflicts between events.
+ */
+public class Calendar {
+
+  private final String title;
+  private final List<Event> events;
+  private final boolean allowConflicts;
+
+  /**
+   * Creates a new calendar with the given title.
+   * By default, this calendar will not allow conflicting events.
+   *
+   * @param title the name of this calendar
+   */
+  public Calendar(String title) {
+    this(title, false);
+  }
+
+  /**
+   * Creates a new calendar with the given title and conflict policy.
+   *
+   * @param title          the name of this calendar
+   * @param allowConflicts whether to allow events with overlapping times
+   */
+  public Calendar(String title, boolean allowConflicts) {
+    this.title = title;
+    this.allowConflicts = allowConflicts;
+    this.events = new ArrayList<>();
+  }
+
+  /**
+   * Adds an event to this calendar if it passes validation.
+   * Checks for duplicate events and optionally checks for time conflicts.
+   *
+   * @param event the event to add
+   * @throws IllegalArgumentException if event is a duplicate
+   * @throws IllegalArgumentException if event conflicts and conflicts are disabled
+   */
+  public void addEvent(Event event) {
+    if (hasDuplicate(event)) {
+      throw new IllegalArgumentException(
+          "Event with same subject, date, and time already exists");
+    }
+
+    if (!allowConflicts && hasTimeConflict(event)) {
+      throw new IllegalArgumentException(
+          "Event conflicts with existing event");
+    }
+
+    events.add(event);
+  }
+
+  /**
+   * Checks if an event with the same subject, start date, and start time already exists.
+   *
+   * @param newEvent the event to check
+   * @return true if a matching event exists
+   */
+  private boolean hasDuplicate(Event newEvent) {
+    for (Event existing : events) {
+      if (existing.getSubject().equals(newEvent.getSubject())
+          &&
+          existing.getStartDate().equals(newEvent.getStartDate())) {
+
+        if (existing.getStartTime() == null && newEvent.getStartTime() == null) {
+          return true;
+        }
+
+        if (existing.getStartTime() != null
+            &&
+            existing.getStartTime().equals(newEvent.getStartTime())) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Checks whether the given event has overlapping times with any existing event.
+   *
+   * @param newEvent the event to check
+   * @return true if there's a time conflict
+   */
+  private boolean hasTimeConflict(Event newEvent) {
+    for (Event existing : events) {
+      if (eventsOverlap(existing, newEvent)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Determines if two events have overlapping time ranges.
+   * All-day events overlap if their date ranges overlap.
+   * Timed events overlap if they occur on overlapping dates and their times intersect.
+   *
+   * @param e1 first event
+   * @param e2 second event
+   * @return true if the events overlap
+   */
+
+  private boolean eventsOverlap(Event e1, Event e2) {
+    boolean datesOverlap = !e1.getEndDate().isBefore(e2.getStartDate()) &&
+        !e2.getEndDate().isBefore(e1.getStartDate());
+
+    if (!datesOverlap) {
+      return false;
+    }
+
+    if (e1.isAllDay() || e2.isAllDay()) {
+      return true;
+    }
+
+    LocalTime start1 = e1.getStartTime();
+    LocalTime end1 = e1.getEndTime() != null ? e1.getEndTime() : e1.getStartTime();
+    LocalTime start2 = e2.getStartTime();
+    LocalTime end2 = e2.getEndTime() != null ? e2.getEndTime() : e2.getStartTime();
+
+    return !end1.isBefore(start2) && !end2.isBefore(start1);
+  }
+  
+  /**
+   * Retrieves a specific event by its identifying information.
+   *
+   * @param subject   the event subject
+   * @param startDate the start date
+   * @param startTime the start time, or null for all-day events
+   * @return the matching event, or null if not found
+   */
+  public Event getEvent(String subject, LocalDate startDate, LocalTime startTime) {
+    for (Event event : events) {
+      if (event.getSubject().equals(subject)
+          &&
+          event.getStartDate().equals(startDate)) {
+
+        if (startTime == null && event.getStartTime() == null) {
+          return event;
+        }
+        if (startTime != null && startTime.equals(event.getStartTime())) {
+          return event;
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Gets all events that occur on the specified date.
+   *
+   * @param date the date to query
+   * @return list of events on that date, possibly empty
+   */
+  public List<Event> getEventsOnDate(LocalDate date) {
+    List<Event> result = new ArrayList<>();
+    for (Event event : events) {
+      if (!event.getEndDate().isBefore(date) && !event.getStartDate().isAfter(date)) {
+        result.add(event);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Checks if the calendar has any events at the specified date and time.
+   *
+   * @param date the date to check
+   * @param time the time to check
+   * @return true if there's an event at that moment
+   */
+  public boolean isBusy(LocalDate date, LocalTime time) {
+    for (Event event : events) {
+      if (!event.getEndDate().isBefore(date) && !event.getStartDate().isAfter(date)) {
+        if (event.isAllDay()) {
+          return true;
+        }
+        if (time != null && !time.isBefore(event.getStartTime())
+            &&
+            time.isBefore(event.getEndTime())) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Gets the title of this calendar.
+   *
+   * @return the calendar title
+   */
+  public String getTitle() {
+    return title;
+  }
+
+  /**
+   * Gets all events in this calendar.
+   *
+   * @return a copy of the events list
+   */
+  public List<Event> getEvents() {
+    return new ArrayList<>(events);
+  }
+}
