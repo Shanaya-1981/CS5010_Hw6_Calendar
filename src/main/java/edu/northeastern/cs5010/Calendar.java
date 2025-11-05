@@ -1,7 +1,11 @@
 package edu.northeastern.cs5010;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -214,6 +218,44 @@ public class Calendar {
   }
 
   /**
+   * Exports all events in this calendar to a CSV file in Google Calendar format.
+   * The generated file can be imported directly into Google Calendar.
+   * Note: This method was generated with assistance from Claude AI as permitted
+   * by the assignment instructions for CSV export functionality.
+   *
+   * @param filename the path where the CSV file should be saved
+   * @throws IOException if there's an error writing to the file
+   */
+
+  public void exportToCsv(String filename) throws IOException {
+    try (PrintWriter writer = new PrintWriter(new FileWriter(filename))) {
+      // Write the header row that Google Calendar expects
+      writer.println("Subject,Start Date,Start Time,End Date,End Time,All Day Event,"
+          + "Description,Location,Private");
+
+      // Write each event as a row
+      for (Event event : events) {
+        String subject = escapeCsv(event.getSubject());
+        String startDate = event.getStartDate().format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
+        String startTime = event.getStartTime() != null
+            ? event.getStartTime().format(DateTimeFormatter.ofPattern("hh:mm a")) : "";
+        String endDate = event.getEndDate().format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
+        String endTime = event.getEndTime() != null
+            ? event.getEndTime().format(DateTimeFormatter.ofPattern("hh:mm a")) : "";
+        String allDay = event.isAllDay() ? "True" : "False";
+        String description =
+            event.getDescription() != null ? escapeCsv(event.getDescription()) : "";
+        String location = event.getLocation() != null ? escapeCsv(event.getLocation()) : "";
+        String isPrivate = event.getVisibility() == Visibility.PRIVATE ? "True" : "False";
+
+        writer.printf("%s,%s,%s,%s,%s,%s,%s,%s,%s%n",
+            subject, startDate, startTime, endDate, endTime,
+            allDay, description, location, isPrivate);
+      }
+    }
+  }
+
+  /**
    * Adds a recurring event by generating individual instances based on the pattern.
    * This creates separate calendar entries for each occurrence
    *
@@ -259,5 +301,27 @@ public class Calendar {
       return false;
     }
     return true;
+  }
+
+  /**
+   * Escapes special characters in CSV fields by wrapping in quotes when needed.
+   * Note: Helper method for CSV export, created with Claude AI assistance.
+   *
+   * @param value the string value to escape
+   * @return the escaped value safe for CSV format
+   */
+
+  private String escapeCsv(String value) {
+    if (value == null) {
+      return "";
+    }
+
+    String escaped = value.replace("\"", "\"\"");
+
+    if (escaped.contains(",") || escaped.contains("\"") || escaped.contains("\n")) {
+      return "\"" + escaped + "\"";
+    }
+
+    return escaped;
   }
 }
