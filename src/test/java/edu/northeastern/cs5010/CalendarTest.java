@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -421,5 +422,223 @@ class CalendarTest {
     calendar.addEvent(second);
 
     assertEquals(2, calendar.getEvents().size());
+  }
+
+  @Test
+  void testUpdateRecurringFromDate() {
+    Event template = new Event.Builder("Weekly Standup", testDate, testDate)
+        .startTime(LocalTime.of(9, 0))
+        .endTime(LocalTime.of(9, 15))
+        .build();
+
+    Set<DayOfWeek> days = Set.of(DayOfWeek.MONDAY);
+    RecurrencePattern pattern = new RecurrencePattern(days, 5);
+
+    calendar.addRecurringEvent(template, pattern);
+
+    String seriesId = calendar.getEvents().get(0).getRecurringSeriesId();
+    LocalDate thirdOccurrence = calendar.getEvents().get(2).getStartDate();
+
+    Event newDetails = new Event.Builder("Updated Standup", testDate, testDate)
+        .startTime(LocalTime.of(10, 0))
+        .endTime(LocalTime.of(10, 15))
+        .build();
+
+    calendar.updateRecurringFromDate(seriesId, thirdOccurrence, newDetails);
+
+    // First two should still have old name
+    assertEquals("Weekly Standup", calendar.getEvents().get(0).getSubject());
+    assertEquals("Weekly Standup", calendar.getEvents().get(1).getSubject());
+
+    // Last three should have new name
+    assertEquals("Updated Standup", calendar.getEvents().get(2).getSubject());
+    assertEquals("Updated Standup", calendar.getEvents().get(3).getSubject());
+    assertEquals("Updated Standup", calendar.getEvents().get(4).getSubject());
+  }
+
+  @Test
+  void testCsvExport() throws IOException {
+    Event event = new Event.Builder("Test Event", testDate, testDate)
+        .startTime(LocalTime.of(14, 0))
+        .endTime(LocalTime.of(15, 0))
+        .location("Room 101")
+        .description("Test description")
+        .build();
+
+    calendar.addEvent(event);
+
+    String filename = "test-calendar.csv";
+    calendar.exportToCsv(filename);
+
+    // Verify file was created
+    java.io.File file = new java.io.File(filename);
+    assertTrue(file.exists());
+
+    // Clean up
+    file.delete();
+  }
+
+  @Test
+  void testCsvEscapingWithCommas() throws IOException {
+    Event event = new Event.Builder("Meeting, urgent", testDate, testDate)
+        .description("Notes, with commas")
+        .build();
+
+    calendar.addEvent(event);
+    calendar.exportToCsv("test-escape.csv");
+
+    java.io.File file = new java.io.File("test-escape.csv");
+    assertTrue(file.exists());
+    file.delete();
+  }
+
+  @Test
+  void testGetAllDayEventByIdentifier() {
+    Event allDay = new Event.Builder("All Day Meeting", testDate, testDate).build();
+    calendar.addEvent(allDay);
+
+    Event found = calendar.getEvent("All Day Meeting", testDate, null);
+    assertNotNull(found);
+    assertEquals("All Day Meeting", found.getSubject());
+  }
+
+  @Test
+  void testUpdateSingleEventFailsAndRestoresOriginal() {
+    Event original = new Event.Builder("First", testDate, testDate)
+        .startTime(LocalTime.of(10, 0))
+        .endTime(LocalTime.of(11, 0))
+        .build();
+
+    Event blocker = new Event.Builder("Blocker", testDate, testDate)
+        .startTime(LocalTime.of(14, 0))
+        .endTime(LocalTime.of(15, 0))
+        .build();
+
+    calendar.addEvent(original);
+    calendar.addEvent(blocker);
+
+    Event conflictingUpdate = new Event.Builder("Updated", testDate, testDate)
+        .startTime(LocalTime.of(14, 30))
+        .endTime(LocalTime.of(15, 30))
+        .build();
+
+    assertThrows(IllegalArgumentException.class, () -> {
+      calendar.updateSingleEvent("First", testDate, LocalTime.of(10, 0), conflictingUpdate);
+    });
+
+    // Original should still exist
+    assertNotNull(calendar.getEvent("First", testDate, LocalTime.of(10, 0)));
+  }
+
+  @Test
+  void testCsvExportWithSpecialCharacters() throws IOException {
+    Event event = new Event.Builder("Meeting, \"urgent\"", testDate, testDate)
+        .description("Notes with\nNewline and, comma")
+        .location("Room \"A\"")
+        .build();
+
+    calendar.addEvent(event);
+    calendar.exportToCsv("test-special.csv");
+
+    java.io.File file = new java.io.File("test-special.csv");
+    assertTrue(file.exists());
+    file.delete();
+  }
+
+  @Test
+  void testCsvExportWithNullFields() throws IOException {
+    Event minimal = new Event.Builder("Minimal", testDate, testDate).build();
+    calendar.addEvent(minimal);
+
+    calendar.exportToCsv("test-minimal.csv");
+
+    java.io.File file = new java.io.File("test-minimal.csv");
+    assertTrue(file.exists());
+    file.delete();
+  }
+
+  @Test
+  void testCsvEscapeQuotesOnly() throws IOException {
+    Event event = new Event.Builder("Quote\"Test", testDate, testDate).build();
+    calendar.addEvent(event);
+    calendar.exportToCsv("test-quotes.csv");
+    new java.io.File("test-quotes.csv").delete();
+  }
+
+  @Test
+  void testCsvEscapeNewlineOnly() throws IOException {
+    Event event = new Event.Builder("Line\nBreak", testDate, testDate).build();
+    calendar.addEvent(event);
+    calendar.exportToCsv("test-newline.csv");
+    new java.io.File("test-newline.csv").delete();
+  }
+
+  @Test
+  void testIsBusyReturnsFalseForDifferentDate() {
+    Event event = new Event.Builder("Meeting", testDate, testDate)
+        .startTime(LocalTime.of(14, 0))
+        .endTime(LocalTime.of(15, 0))
+        .build();
+    calendar.addEvent(event);
+
+    assertFalse(calendar.isBusy(testDate.plusDays(5), LocalTime.of(14, 0)));
+  }
+
+  @Test
+  void testVisibilityPublicInCsvExport() throws IOException {
+    Event publicEvent = new Event.Builder("Public Event", testDate, testDate)
+        .visibility(Visibility.PUBLIC)
+        .build();
+    calendar.addEvent(publicEvent);
+    calendar.exportToCsv("test-public.csv");
+    new java.io.File("test-public.csv").delete();
+  }
+
+  @Test
+  void testEventsWithExplicitEndTimes() {
+    Event event1 = new Event.Builder("First", testDate, testDate)
+        .startTime(LocalTime.of(10, 0))
+        .endTime(LocalTime.of(11, 0))
+        .build();
+    Event event2 = new Event.Builder("Second", testDate, testDate)
+        .startTime(LocalTime.of(11, 30))
+        .endTime(LocalTime.of(12, 30))
+        .build();
+
+    calendar.addEvent(event1);
+    calendar.addEvent(event2);
+
+    assertEquals(2, calendar.getEvents().size());
+  }
+
+  @Test
+  void testTwoTimedEventsOnDifferentDates() {
+    Event event1 = new Event.Builder("Event 1", testDate, testDate)
+        .startTime(LocalTime.of(14, 0))
+        .endTime(LocalTime.of(15, 0))
+        .build();
+    Event event2 = new Event.Builder("Event 2", testDate.plusDays(1), testDate.plusDays(1))
+        .startTime(LocalTime.of(14, 0))
+        .endTime(LocalTime.of(15, 0))
+        .build();
+
+    calendar.addEvent(event1);
+    calendar.addEvent(event2);
+
+    assertFalse(calendar.isBusy(testDate.plusDays(2), LocalTime.of(14, 0)));
+  }
+
+  @Test
+  void testUpdateSeriesWithNullSeriesId() {
+    Event standalone = new Event.Builder("Standalone", testDate, testDate).build();
+    calendar.addEvent(standalone);
+
+    Event newDetails = new Event.Builder("Updated", testDate, testDate).build();
+
+    // This should not match anything since standalone has null series ID
+    calendar.updateRecurringSeries(null, newDetails);
+
+    // Original event should still exist unchanged
+    assertEquals("Standalone", calendar.getEvents().get(0).getSubject());
   }
 }

@@ -56,26 +56,26 @@ Current scope:     <a href="../../index.html">all classes</a>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    83.3%
+    100%
   </span>
   <span class="absValue">
-    (15/18)
+    (18/18)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    62.9%
+    88.7%
   </span>
   <span class="absValue">
-    (78/124)
+    (110/124)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    71%
+    99.3%
   </span>
   <span class="absValue">
-    (98/138)
+    (137/138)
   </span>
 </td>
 </tr>
@@ -234,12 +234,12 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;   */
 &nbsp;  public Event getEvent(String subject, LocalDate startDate, LocalTime startTime) {
 <b class="fc">&nbsp;    for (Event event : events) {</b>
-<b class="pc">&nbsp;      if (event.getSubject().equals(subject)</b>
+<b class="fc">&nbsp;      if (event.getSubject().equals(subject)</b>
 &nbsp;          &amp;&amp;
 <b class="pc">&nbsp;          event.getStartDate().equals(startDate)) {</b>
 &nbsp;
 <b class="pc">&nbsp;        if (startTime == null &amp;&amp; event.getStartTime() == null) {</b>
-<b class="nc">&nbsp;          return event;</b>
+<b class="fc">&nbsp;          return event;</b>
 &nbsp;        }
 <b class="pc">&nbsp;        if (startTime != null &amp;&amp; startTime.equals(event.getStartTime())) {</b>
 <b class="fc">&nbsp;          return event;</b>
@@ -317,27 +317,27 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;   */
 &nbsp;
 &nbsp;  public void exportToCsv(String filename) throws IOException {
-<b class="nc">&nbsp;    try (PrintWriter writer = new PrintWriter(new FileWriter(filename))) {</b>
+<b class="fc">&nbsp;    try (PrintWriter writer = new PrintWriter(new FileWriter(filename))) {</b>
 &nbsp;      // Write the header row that Google Calendar expects
-<b class="nc">&nbsp;      writer.println(&quot;Subject,Start Date,Start Time,End Date,End Time,All Day Event,&quot;</b>
+<b class="fc">&nbsp;      writer.println(&quot;Subject,Start Date,Start Time,End Date,End Time,All Day Event,&quot;</b>
 &nbsp;          + &quot;Description,Location,Private&quot;);
 &nbsp;
 &nbsp;      // Write each event as a row
-<b class="nc">&nbsp;      for (Event event : events) {</b>
-<b class="nc">&nbsp;        String subject = escapeCsv(event.getSubject());</b>
-<b class="nc">&nbsp;        String startDate = event.getStartDate().format(DateTimeFormatter.ofPattern(&quot;MM/dd/yyyy&quot;));</b>
-<b class="nc">&nbsp;        String startTime = event.getStartTime() != null</b>
-<b class="nc">&nbsp;            ? event.getStartTime().format(DateTimeFormatter.ofPattern(&quot;hh:mm a&quot;)) : &quot;&quot;;</b>
-<b class="nc">&nbsp;        String endDate = event.getEndDate().format(DateTimeFormatter.ofPattern(&quot;MM/dd/yyyy&quot;));</b>
-<b class="nc">&nbsp;        String endTime = event.getEndTime() != null</b>
-<b class="nc">&nbsp;            ? event.getEndTime().format(DateTimeFormatter.ofPattern(&quot;hh:mm a&quot;)) : &quot;&quot;;</b>
-<b class="nc">&nbsp;        String allDay = event.isAllDay() ? &quot;True&quot; : &quot;False&quot;;</b>
+<b class="fc">&nbsp;      for (Event event : events) {</b>
+<b class="fc">&nbsp;        String subject = escapeCsv(event.getSubject());</b>
+<b class="fc">&nbsp;        String startDate = event.getStartDate().format(DateTimeFormatter.ofPattern(&quot;MM/dd/yyyy&quot;));</b>
+<b class="fc">&nbsp;        String startTime = event.getStartTime() != null</b>
+<b class="fc">&nbsp;            ? event.getStartTime().format(DateTimeFormatter.ofPattern(&quot;hh:mm a&quot;)) : &quot;&quot;;</b>
+<b class="fc">&nbsp;        String endDate = event.getEndDate().format(DateTimeFormatter.ofPattern(&quot;MM/dd/yyyy&quot;));</b>
+<b class="fc">&nbsp;        String endTime = event.getEndTime() != null</b>
+<b class="fc">&nbsp;            ? event.getEndTime().format(DateTimeFormatter.ofPattern(&quot;hh:mm a&quot;)) : &quot;&quot;;</b>
+<b class="fc">&nbsp;        String allDay = event.isAllDay() ? &quot;True&quot; : &quot;False&quot;;</b>
 &nbsp;        String description =
-<b class="nc">&nbsp;            event.getDescription() != null ? escapeCsv(event.getDescription()) : &quot;&quot;;</b>
-<b class="nc">&nbsp;        String location = event.getLocation() != null ? escapeCsv(event.getLocation()) : &quot;&quot;;</b>
-<b class="nc">&nbsp;        String isPrivate = event.getVisibility() == Visibility.PRIVATE ? &quot;True&quot; : &quot;False&quot;;</b>
+<b class="fc">&nbsp;            event.getDescription() != null ? escapeCsv(event.getDescription()) : &quot;&quot;;</b>
+<b class="fc">&nbsp;        String location = event.getLocation() != null ? escapeCsv(event.getLocation()) : &quot;&quot;;</b>
+<b class="fc">&nbsp;        String isPrivate = event.getVisibility() == Visibility.PRIVATE ? &quot;True&quot; : &quot;False&quot;;</b>
 &nbsp;
-<b class="nc">&nbsp;        writer.printf(&quot;%s,%s,%s,%s,%s,%s,%s,%s,%s%n&quot;,</b>
+<b class="fc">&nbsp;        writer.printf(&quot;%s,%s,%s,%s,%s,%s,%s,%s,%s%n&quot;,</b>
 &nbsp;            subject, startDate, startTime, endDate, endTime,
 &nbsp;            allDay, description, location, isPrivate);
 &nbsp;      }
@@ -415,7 +415,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;    try {
 <b class="fc">&nbsp;      addEvent(updated);</b>
 &nbsp;    } catch (IllegalArgumentException e) {
-<b class="nc">&nbsp;      events.add(original);</b>
+<b class="fc">&nbsp;      events.add(original);</b>
 &nbsp;      throw e;
 &nbsp;    }
 &nbsp;  }
@@ -463,30 +463,30 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;   * @param newDetails the updated event information
 &nbsp;   */
 &nbsp;  public void updateRecurringFromDate(String seriesId, LocalDate fromDate, Event newDetails) {
-<b class="nc">&nbsp;    List&lt;Event&gt; toChange = new ArrayList&lt;&gt;();</b>
+<b class="fc">&nbsp;    List&lt;Event&gt; toChange = new ArrayList&lt;&gt;();</b>
 &nbsp;
-<b class="nc">&nbsp;    for (Event event : events) {</b>
-<b class="nc">&nbsp;      if (seriesId.equals(event.getRecurringSeriesId())</b>
+<b class="fc">&nbsp;    for (Event event : events) {</b>
+<b class="pc">&nbsp;      if (seriesId.equals(event.getRecurringSeriesId())</b>
 &nbsp;          &amp;&amp;
-<b class="nc">&nbsp;          !event.getStartDate().isBefore(fromDate)) {</b>
-<b class="nc">&nbsp;        toChange.add(event);</b>
+<b class="fc">&nbsp;          !event.getStartDate().isBefore(fromDate)) {</b>
+<b class="fc">&nbsp;        toChange.add(event);</b>
 &nbsp;      }
 &nbsp;    }
 &nbsp;
-<b class="nc">&nbsp;    for (Event old : toChange) {</b>
-<b class="nc">&nbsp;      events.remove(old);</b>
+<b class="fc">&nbsp;    for (Event old : toChange) {</b>
+<b class="fc">&nbsp;      events.remove(old);</b>
 &nbsp;
-<b class="nc">&nbsp;      Event updated = new Event.Builder(newDetails.getSubject(),</b>
-<b class="nc">&nbsp;          old.getStartDate(), old.getStartDate())</b>
-<b class="nc">&nbsp;          .startTime(newDetails.getStartTime())</b>
-<b class="nc">&nbsp;          .endTime(newDetails.getEndTime())</b>
-<b class="nc">&nbsp;          .location(newDetails.getLocation())</b>
-<b class="nc">&nbsp;          .description(newDetails.getDescription())</b>
-<b class="nc">&nbsp;          .visibility(newDetails.getVisibility())</b>
-<b class="nc">&nbsp;          .recurringSeriesId(seriesId)</b>
-<b class="nc">&nbsp;          .build();</b>
+<b class="fc">&nbsp;      Event updated = new Event.Builder(newDetails.getSubject(),</b>
+<b class="fc">&nbsp;          old.getStartDate(), old.getStartDate())</b>
+<b class="fc">&nbsp;          .startTime(newDetails.getStartTime())</b>
+<b class="fc">&nbsp;          .endTime(newDetails.getEndTime())</b>
+<b class="fc">&nbsp;          .location(newDetails.getLocation())</b>
+<b class="fc">&nbsp;          .description(newDetails.getDescription())</b>
+<b class="fc">&nbsp;          .visibility(newDetails.getVisibility())</b>
+<b class="fc">&nbsp;          .recurringSeriesId(seriesId)</b>
+<b class="fc">&nbsp;          .build();</b>
 &nbsp;
-<b class="nc">&nbsp;      events.add(updated);</b>
+<b class="fc">&nbsp;      events.add(updated);</b>
 &nbsp;    }
 &nbsp;  }
 &nbsp;
@@ -498,17 +498,17 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;   * @return the escaped value safe for CSV format
 &nbsp;   */
 &nbsp;  private String escapeCsv(String value) {
-<b class="nc">&nbsp;    if (value == null) {</b>
+<b class="pc">&nbsp;    if (value == null) {</b>
 <b class="nc">&nbsp;      return &quot;&quot;;</b>
 &nbsp;    }
 &nbsp;
-<b class="nc">&nbsp;    String escaped = value.replace(&quot;\&quot;&quot;, &quot;\&quot;\&quot;&quot;);</b>
+<b class="fc">&nbsp;    String escaped = value.replace(&quot;\&quot;&quot;, &quot;\&quot;\&quot;&quot;);</b>
 &nbsp;
-<b class="nc">&nbsp;    if (escaped.contains(&quot;,&quot;) || escaped.contains(&quot;\&quot;&quot;) || escaped.contains(&quot;\n&quot;)) {</b>
-<b class="nc">&nbsp;      return &quot;\&quot;&quot; + escaped + &quot;\&quot;&quot;;</b>
+<b class="fc">&nbsp;    if (escaped.contains(&quot;,&quot;) || escaped.contains(&quot;\&quot;&quot;) || escaped.contains(&quot;\n&quot;)) {</b>
+<b class="fc">&nbsp;      return &quot;\&quot;&quot; + escaped + &quot;\&quot;&quot;;</b>
 &nbsp;    }
 &nbsp;
-<b class="nc">&nbsp;    return escaped;</b>
+<b class="fc">&nbsp;    return escaped;</b>
 &nbsp;  }
 &nbsp;}
 </code>
@@ -534,7 +534,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-11-05 00:19</div>
+    <div style="float:right;">generated on 2025-11-05 01:09</div>
 </div>
 </body>
 </html>
