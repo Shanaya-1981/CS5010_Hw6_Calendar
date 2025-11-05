@@ -2,8 +2,10 @@ package edu.northeastern.cs5010;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -66,5 +68,21 @@ class CalendarTest {
 
     assertEquals(1, calendar.getEventsOnDate(date).size());
     assertEquals(0, calendar.getEventsOnDate(LocalDate.of(2025, 11, 16)).size());
+  }
+
+  @Test
+  void testAddRecurringEvent() {
+    LocalDate startDate = LocalDate.of(2025, 11, 4);
+    Event template = new Event.Builder("Weekly Meeting", startDate, startDate)
+        .startTime(LocalTime.of(14, 0))
+        .endTime(LocalTime.of(15, 0))
+        .build();
+
+    Set<DayOfWeek> days = Set.of(DayOfWeek.TUESDAY, DayOfWeek.THURSDAY);
+    RecurrencePattern pattern = new RecurrencePattern(days, 4);
+
+    calendar.addRecurringEvent(template, pattern);
+
+    assertEquals(4, calendar.getEvents().size());
   }
 }
