@@ -111,7 +111,8 @@ public class Calendar {
    */
 
   private boolean eventsOverlap(Event e1, Event e2) {
-    boolean datesOverlap = !e1.getEndDate().isBefore(e2.getStartDate()) &&
+    boolean datesOverlap = !e1.getEndDate().isBefore(e2.getStartDate())
+        &&
         !e2.getEndDate().isBefore(e1.getStartDate());
 
     if (!datesOverlap) {
@@ -129,7 +130,7 @@ public class Calendar {
 
     return !end1.isBefore(start2) && !end2.isBefore(start1);
   }
-  
+
   /**
    * Retrieves a specific event by its identifying information.
    *
@@ -210,5 +211,53 @@ public class Calendar {
    */
   public List<Event> getEvents() {
     return new ArrayList<>(events);
+  }
+
+  /**
+   * Adds a recurring event by generating individual instances based on the pattern.
+   * This creates separate calendar entries for each occurrence
+   *
+   * @param template an example event that defines the subject, times, and other details
+   * @param pattern  specifies which days to repeat on and when to stop
+   * @throws IllegalArgumentException if any generated instance would create a conflict
+   */
+  public void addRecurringEvent(Event template, RecurrencePattern pattern) {
+    LocalDate date = template.getStartDate();
+    int count = 0;
+
+    while (shouldContinueRecurrence(count, date, pattern)) {
+      if (pattern.getDaysOfWeek().contains(date.getDayOfWeek())) {
+        Event instance = new Event.Builder(template.getSubject(), date, date)
+            .startTime(template.getStartTime())
+            .endTime(template.getEndTime())
+            .location(template.getLocation())
+            .description(template.getDescription())
+            .visibility(template.getVisibility())
+            .build();
+
+        addEvent(instance);
+        count++;
+      }
+      date = date.plusDays(1);
+    }
+  }
+
+  /**
+   * Checks whether we should keep generating more recurring event instances.
+   * Stops when we hit either the occurrence limit or the end date, whichever comes first.
+   *
+   * @param count   how many instances we've created so far
+   * @param date    what date we're currently looking at
+   * @param pattern the pattern that defines our stopping conditions
+   * @return true if we should keep going, false if we've hit a limit
+   */
+  private boolean shouldContinueRecurrence(int count, LocalDate date, RecurrencePattern pattern) {
+    if (pattern.getOccurrenceLimit() != null && count >= pattern.getOccurrenceLimit()) {
+      return false;
+    }
+    if (pattern.getEndDate() != null && date.isAfter(pattern.getEndDate())) {
+      return false;
+    }
+    return true;
   }
 }
