@@ -18,6 +18,7 @@ public class Event {
   private final String location;
   private final String description;
   private final Visibility visibility;
+  private final String recurringSeriesId;
 
   /**
    * Constructs an Event using the provided Builder.
@@ -35,6 +36,7 @@ public class Event {
     this.location = builder.location;
     this.description = builder.description;
     this.visibility = builder.visibility != null ? builder.visibility : Visibility.PRIVATE;
+    this.recurringSeriesId = builder.recurringSeriesId;
 
     validate();
   }
@@ -148,6 +150,17 @@ public class Event {
   }
 
   /**
+   * Gets the ID that links this event to other events in the same recurring series.
+   * Regular single events will have null here, while events generated from a
+   * recurring pattern share the same series ID.
+   *
+   * @return the series ID, or null if this is not part of a recurring series
+   */
+  public String getRecurringSeriesId() {
+    return recurringSeriesId;
+  }
+
+  /**
    * Builder class for constructing Event instances with a clean, readable syntax.
    * Use this to create events by specifying only the fields you need.
    */
@@ -162,6 +175,7 @@ public class Event {
     private String location = null;
     private String description = null;
     private Visibility visibility = null;
+    private String recurringSeriesId = null;
 
     /**
      * Creates a new Builder with the required event information.
@@ -228,6 +242,18 @@ public class Event {
      */
     public Builder visibility(Visibility visibility) {
       this.visibility = visibility;
+      return this;
+    }
+
+    /**
+     * Assigns this event to a recurring series by setting the series ID.
+     * This is used internally when generating multiple events from a recurring pattern.
+     *
+     * @param id the unique identifier for the recurring series
+     * @return this Builder for method chaining
+     */
+    public Builder recurringSeriesId(String id) {
+      this.recurringSeriesId = id;
       return this;
     }
 
