@@ -304,13 +304,108 @@ public class Calendar {
   }
 
   /**
+   * Updates a single event that's part of a recurring series.
+   * Only this one occurrence changes - the rest of the series stays the same.
+   *
+   * @param subject subject of the event to change
+   * @param date    the specific date of the occurrence
+   * @param time    the start time, or null if all-day
+   * @param updated the new version of this event
+   * @throws IllegalArgumentException if event not found or update creates conflict
+   */
+  public void updateSingleEvent(String subject, LocalDate date, LocalTime time, Event updated) {
+    Event original = getEvent(subject, date, time);
+    if (original == null) {
+      throw new IllegalArgumentException("Cannot find event to update");
+    }
+
+    events.remove(original);
+
+    try {
+      addEvent(updated);
+    } catch (IllegalArgumentException e) {
+      events.add(original);
+      throw e;
+    }
+  }
+
+  /**
+   * Updates all events in a recurring series with new details.
+   * Finds every event that shares the given series ID and applies the changes.
+   *
+   * @param seriesId   the ID linking the recurring events together
+   * @param newDetails the updated event information to apply
+   */
+  public void updateRecurringSeries(String seriesId, Event newDetails) {
+    List<Event> toChange = new ArrayList<>();
+
+    for (Event event : events) {
+      if (seriesId.equals(event.getRecurringSeriesId())) {
+        toChange.add(event);
+      }
+    }
+
+    for (Event old : toChange) {
+      events.remove(old);
+
+      Event updated = new Event.Builder(newDetails.getSubject(),
+          old.getStartDate(), old.getStartDate())
+          .startTime(newDetails.getStartTime())
+          .endTime(newDetails.getEndTime())
+          .location(newDetails.getLocation())
+          .description(newDetails.getDescription())
+          .visibility(newDetails.getVisibility())
+          .recurringSeriesId(seriesId)
+          .build();
+
+      events.add(updated);
+    }
+  }
+
+  /**
+   * Updates all future instances in a recurring series starting from a specific date.
+   * Events before this date stay unchanged, but this date and all future occurrences
+   * get the new details.
+   *
+   * @param seriesId   the ID of the recurring series
+   * @param fromDate   the date to start applying changes (inclusive)
+   * @param newDetails the updated event information
+   */
+  public void updateRecurringFromDate(String seriesId, LocalDate fromDate, Event newDetails) {
+    List<Event> toChange = new ArrayList<>();
+
+    for (Event event : events) {
+      if (seriesId.equals(event.getRecurringSeriesId())
+          &&
+          !event.getStartDate().isBefore(fromDate)) {
+        toChange.add(event);
+      }
+    }
+
+    for (Event old : toChange) {
+      events.remove(old);
+
+      Event updated = new Event.Builder(newDetails.getSubject(),
+          old.getStartDate(), old.getStartDate())
+          .startTime(newDetails.getStartTime())
+          .endTime(newDetails.getEndTime())
+          .location(newDetails.getLocation())
+          .description(newDetails.getDescription())
+          .visibility(newDetails.getVisibility())
+          .recurringSeriesId(seriesId)
+          .build();
+
+      events.add(updated);
+    }
+  }
+
+  /**
    * Escapes special characters in CSV fields by wrapping in quotes when needed.
    * Note: Helper method for CSV export, created with Claude AI assistance.
    *
    * @param value the string value to escape
    * @return the escaped value safe for CSV format
    */
-
   private String escapeCsv(String value) {
     if (value == null) {
       return "";
