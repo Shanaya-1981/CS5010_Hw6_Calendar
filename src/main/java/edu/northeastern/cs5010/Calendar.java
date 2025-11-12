@@ -18,6 +18,7 @@ public class Calendar {
   private final String title;
   private final List<Event> events;
   private final boolean allowConflicts;
+  private List<CalendarListener> listeners;
 
   /**
    * Creates a new calendar with the given title.
@@ -39,6 +40,7 @@ public class Calendar {
     this.title = title;
     this.allowConflicts = allowConflicts;
     this.events = new ArrayList<>();
+    this.listeners = new ArrayList<>();
   }
 
   /**
@@ -61,6 +63,7 @@ public class Calendar {
     }
 
     events.add(event);
+    announceEventAdded(event);
   }
 
   /**
@@ -325,6 +328,7 @@ public class Calendar {
 
     try {
       addEvent(updated);
+      announceEventModified(updated);
     } catch (IllegalArgumentException e) {
       events.add(original);
       throw e;
@@ -361,6 +365,7 @@ public class Calendar {
           .build();
 
       events.add(updated);
+      announceEventModified(updated);
     }
   }
 
@@ -398,6 +403,50 @@ public class Calendar {
           .build();
 
       events.add(updated);
+      announceEventModified(updated);
+    }
+  }
+
+  /**
+   * Registers a listener to receive notifications when events are added or modified.
+   * The listener will be called whenever changes occur in this calendar.
+   *
+   * @param listener the listener to register
+   */
+  public void addCalendarListener(CalendarListener listener) {
+    if (listener != null && !listeners.contains(listener)) {
+      listeners.add(listener);
+    }
+  }
+
+  /**
+   * Removes a previously registered listener so it no longer receives notifications.
+   *
+   * @param listener the listener to remove
+   */
+  public void removeCalendarListener(CalendarListener listener) {
+    listeners.remove(listener);
+  }
+
+  /**
+   * Notifies all registered listeners that an event has been added to the calendar.
+   *
+   * @param event the event that was added
+   */
+  protected void announceEventAdded(Event event) {
+    for (CalendarListener listener : listeners) {
+      listener.onEventAdded(event);
+    }
+  }
+
+  /**
+   * Notifies all registered listeners that an event has been modified.
+   *
+   * @param event the event that was modified
+   */
+  protected void announceEventModified(Event event) {
+    for (CalendarListener listener : listeners) {
+      listener.onEventModified(event);
     }
   }
 
