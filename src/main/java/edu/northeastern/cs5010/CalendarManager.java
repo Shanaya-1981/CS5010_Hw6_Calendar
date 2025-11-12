@@ -1,7 +1,9 @@
 package edu.northeastern.cs5010;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -67,5 +69,48 @@ public class CalendarManager {
     }
 
     return calendar;
+  }
+
+  /**
+   * Saves all calendars to separate CSV files.
+   * Each calendar is saved as {filename}_0.csv, {filename}_1.csv, etc.
+   *
+   * @param calendars    the list of calendars to save
+   * @param baseFilename the base filename (without extension)
+   * @throws IOException if files cannot be written
+   */
+  public static void saveAllCalendars(List<Calendar> calendars, String baseFilename)
+      throws IOException {
+    for (int i = 0; i < calendars.size(); i++) {
+      String filename = baseFilename + "_" + i + ".csv";
+      calendars.get(i).exportToCsv(filename);
+    }
+  }
+
+  /**
+   * Restores all calendars from CSV files.
+   * Looks for {baseFilename}_0.csv, {baseFilename}_1.csv, etc.
+   *
+   * @param baseFilename the base filename (without extension)
+   * @return list of restored calendars
+   * @throws IOException if files cannot be read
+   */
+  public static List<Calendar> restoreAllCalendars(String baseFilename) throws IOException {
+    List<Calendar> calendars = new ArrayList<>();
+    int i = 0;
+
+    while (true) {
+      String filename = baseFilename + "_" + i + ".csv";
+      File file = new File(filename);
+
+      if (!file.exists()) {
+        break;  // No more files
+      }
+
+      calendars.add(importFromCsv(filename));
+      i++;
+    }
+
+    return calendars;
   }
 }

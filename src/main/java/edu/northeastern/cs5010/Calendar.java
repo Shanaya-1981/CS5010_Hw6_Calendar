@@ -164,6 +164,15 @@ public class Calendar {
   }
 
   /**
+   * Gets whether this calendar allows conflicting events.
+   *
+   * @return true if conflicts are allowed, false otherwise
+   */
+  public boolean getAllowConflicts() {
+    return allowConflicts;
+  }
+  
+  /**
    * Gets all events that occur on the specified date.
    *
    * @param date the date to query
