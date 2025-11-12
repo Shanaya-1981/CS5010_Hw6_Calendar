@@ -1,5 +1,7 @@
 package edu.northeastern.cs5010;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterEach;
 import java.io.File;
@@ -14,35 +16,47 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class CalendarManagerTest {
 
-  @AfterEach
-  public void cleanup() {
-    new File("test_calendar.csv").delete();
-  }
-
   @Test
-  public void testExportAndImport() throws IOException {
-    Calendar original = new Calendar("Test Calendar");
+  public void testSaveAndRestoreAllCalendars() throws IOException {
+    // Create multiple calendars with events
+    Calendar cal1 = new Calendar("Work");
+    Calendar cal2 = new Calendar("Personal");
 
     Event event1 = new Event.Builder("Meeting",
         LocalDate.of(2025, 11, 15),
         LocalDate.of(2025, 11, 15))
         .startTime(LocalTime.of(10, 0))
         .endTime(LocalTime.of(11, 0))
-        .location("Room 101")
         .build();
 
-    original.addEvent(event1);
-    original.exportToCsv("test_calendar.csv");
+    Event event2 = new Event.Builder("Birthday",
+        LocalDate.of(2025, 11, 20),
+        LocalDate.of(2025, 11, 20))
+        .build();
 
-    Calendar imported = CalendarManager.importFromCsv("test_calendar.csv");
+    cal1.addEvent(event1);
+    cal2.addEvent(event2);
 
-    assertEquals(1, imported.getEvents().size());
+    List<Calendar> original = new ArrayList<>();
+    original.add(cal1);
+    original.add(cal2);
 
-    Event importedEvent = imported.getEvents().get(0);
-    assertEquals("Meeting", importedEvent.getSubject());
-    assertEquals(LocalDate.of(2025, 11, 15), importedEvent.getStartDate());
-    assertEquals(LocalTime.of(10, 0), importedEvent.getStartTime());
-    assertEquals(LocalTime.of(11, 0), importedEvent.getEndTime());
-    assertEquals("Room 101", importedEvent.getLocation());
+    // Save all calendars
+    CalendarManager.saveAllCalendars(original, "test_all");
+
+    // Restore all calendars
+    List<Calendar> restored = CalendarManager.restoreAllCalendars("test_all");
+
+    // Verify
+    assertEquals(2, restored.size());
+    assertEquals(1, restored.get(0).getEvents().size());
+    assertEquals(1, restored.get(1).getEvents().size());
+  }
+
+  @AfterEach
+  public void cleanup() {
+    new File("test_calendar.csv").delete();
+    new File("test_all_0.csv").delete();
+    new File("test_all_1.csv").delete();
   }
 }
