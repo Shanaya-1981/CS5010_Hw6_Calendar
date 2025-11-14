@@ -10,6 +10,12 @@ import javax.swing.SwingUtilities;
  */
 public class Controller {
 
+  /**
+   * Main entry point for the calendar application.
+   * Restores saved calendars and displays the create and detail views.
+   *
+   * @param args command line arguments (not used)
+   */
   public static void main(String[] args) {
     SwingUtilities.invokeLater(() -> {
       try {
