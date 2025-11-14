@@ -25,7 +25,8 @@ public class CreateEventView extends JFrame {
   private JComboBox<String> visibilityComboBox;
 
   private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-  private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("hh:mm a");
+  private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("h:mm a",
+      java.util.Locale.US);
 
   public CreateEventView(Calendar calendar) {
     this.calendar = calendar;

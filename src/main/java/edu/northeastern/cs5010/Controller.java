@@ -23,14 +23,23 @@ public class Controller {
         List<Calendar> calendars;
         try {
           calendars = CalendarManager.restoreAllCalendars("calendars");
-          System.out.println("Loaded " + calendars.size() + " calendars");
+          if (calendars.isEmpty()) {
+            System.out.println("No calendars found, creating new calendar");
+            calendars = new java.util.ArrayList<>();
+            calendars.add(new Calendar("My Calendar"));
+          } else {
+            System.out.println("Loaded " + calendars.size() + " calendars");
+          }
         } catch (IOException e) {
-          System.out.println("No saved calendars found, creating new calendar");
-          calendars = List.of(new Calendar("My Calendar"));
+          System.out.println("Error loading calendars, creating new calendar");
+          calendars = new java.util.ArrayList<>();
+          calendars.add(new Calendar("My Calendar"));
         }
 
-        // Step 2: Select a calendar (just pick the first one)
-        Calendar selectedCalendar = calendars.get(0);
+        final List<Calendar> finalCalendars = calendars;
+
+        // Step 2: Select a calendar
+        Calendar selectedCalendar = finalCalendars.get(0);
         System.out.println("Selected calendar: " + selectedCalendar.getTitle());
 
         // Step 3: Create and display CreateEventView
@@ -49,7 +58,7 @@ public class Controller {
         // Optional: Save calendars on exit
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
           try {
-            CalendarManager.saveAllCalendars(calendars, "calendars");
+            CalendarManager.saveAllCalendars(finalCalendars, "calendars");
             System.out.println("Calendars saved successfully");
           } catch (IOException e) {
             System.err.println("Error saving calendars: " + e.getMessage());
@@ -57,7 +66,7 @@ public class Controller {
         }));
 
       } catch (Exception e) {
-        e.printStackTrace();
+        System.err.println("Error: " + e.getMessage());
         JOptionPane.showMessageDialog(null,
             "Error starting application: " + e.getMessage(),
             "Error",
