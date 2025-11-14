@@ -8,7 +8,7 @@ import java.time.LocalTime;
  * Every event needs a subject, start date, and end date at minimum.
  * You can optionally add times, location, description, and set visibility.
  */
-public class Event {
+public final class Event {
 
   private final String subject;
   private final LocalDate startDate;

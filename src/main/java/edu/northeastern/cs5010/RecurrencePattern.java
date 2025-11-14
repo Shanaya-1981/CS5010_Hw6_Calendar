@@ -2,6 +2,7 @@ package edu.northeastern.cs5010;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -22,8 +23,9 @@ public class RecurrencePattern {
    * @param daysOfWeek  which days of the week to create events on
    * @param occurrences total number of events to create
    */
+
   public RecurrencePattern(Set<DayOfWeek> daysOfWeek, int occurrences) {
-    this.daysOfWeek = daysOfWeek;
+    this.daysOfWeek = new HashSet<>(daysOfWeek);  // Defensive copy
     this.occurrenceLimit = occurrences;
     this.endDate = null;
   }
@@ -36,8 +38,8 @@ public class RecurrencePattern {
    * @param endDate    the last date to generate events on
    */
   public RecurrencePattern(Set<DayOfWeek> daysOfWeek, LocalDate endDate) {
-    this.daysOfWeek = daysOfWeek;
-    this.occurrenceLimit = null;
+    this.daysOfWeek = new HashSet<>(daysOfWeek);  // Defensive copy
+    this.occurrenceLimit = null;  // ADD THIS LINE - initialize it!
     this.endDate = endDate;
   }
 
