@@ -11,6 +11,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Manages saving and loading of calendars to/from files.
+ * Handles both single calendar CSV import/export and persistence of multiple calendars.
+ */
 public class CalendarManager {
 
   /**

@@ -1,8 +1,18 @@
 package edu.northeastern.cs5010;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.time.format.DateTimeFormatter;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 /**
  * A view for displaying and modifying event details.
@@ -15,12 +25,14 @@ public class EventDetailView extends JFrame {
   private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy");
   private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("hh:mm a");
 
+  @SuppressWarnings("checkstyle:MissingJavadocMethod")
   public EventDetailView(Event event, Calendar calendar) {
     this.event = event;
     this.calendar = calendar;
     initializeUI();
   }
 
+  @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
   private void initializeUI() {
     setTitle("Event Details");
     setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
