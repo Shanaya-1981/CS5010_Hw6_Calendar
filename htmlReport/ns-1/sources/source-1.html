@@ -1,0 +1,540 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > Calendar</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">edu.northeastern.cs5010</a>
+</div>
+
+<h1>Coverage Summary for Class: Calendar (edu.northeastern.cs5010)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Calendar</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (18/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    88.7%
+  </span>
+  <span class="absValue">
+    (110/124)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    99.3%
+  </span>
+  <span class="absValue">
+    (137/138)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package edu.northeastern.cs5010;
+&nbsp;
+&nbsp;import java.io.FileWriter;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.PrintWriter;
+&nbsp;import java.time.LocalDate;
+&nbsp;import java.time.LocalTime;
+&nbsp;import java.time.format.DateTimeFormatter;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.List;
+&nbsp;
+&nbsp;/**
+&nbsp; * Represents a calendar that holds events and enforces uniqueness rules.
+&nbsp; * Calendars can optionally prevent time conflicts between events.
+&nbsp; */
+&nbsp;public class Calendar {
+&nbsp;
+&nbsp;  private final String title;
+&nbsp;  private final List&lt;Event&gt; events;
+&nbsp;  private final boolean allowConflicts;
+&nbsp;
+&nbsp;  /**
+&nbsp;   * Creates a new calendar with the given title.
+&nbsp;   * By default, this calendar will not allow conflicting events.
+&nbsp;   *
+&nbsp;   * @param title the name of this calendar
+&nbsp;   */
+&nbsp;  public Calendar(String title) {
+<b class="fc">&nbsp;    this(title, false);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  /**
+&nbsp;   * Creates a new calendar with the given title and conflict policy.
+&nbsp;   *
+&nbsp;   * @param title          the name of this calendar
+&nbsp;   * @param allowConflicts whether to allow events with overlapping times
+&nbsp;   */
+<b class="fc">&nbsp;  public Calendar(String title, boolean allowConflicts) {</b>
+<b class="fc">&nbsp;    this.title = title;</b>
+<b class="fc">&nbsp;    this.allowConflicts = allowConflicts;</b>
+<b class="fc">&nbsp;    this.events = new ArrayList&lt;&gt;();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  /**
+&nbsp;   * Adds an event to this calendar if it passes validation.
+&nbsp;   * Checks for duplicate events and optionally checks for time conflicts.
+&nbsp;   *
+&nbsp;   * @param event the event to add
+&nbsp;   * @throws IllegalArgumentException if event is a duplicate
+&nbsp;   * @throws IllegalArgumentException if event conflicts and conflicts are disabled
+&nbsp;   */
+&nbsp;  public void addEvent(Event event) {
+<b class="fc">&nbsp;    if (hasDuplicate(event)) {</b>
+<b class="fc">&nbsp;      throw new IllegalArgumentException(</b>
+&nbsp;          &quot;Event with same subject, date, and time already exists&quot;);
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    if (!allowConflicts &amp;&amp; hasTimeConflict(event)) {</b>
+<b class="fc">&nbsp;      throw new IllegalArgumentException(</b>
+&nbsp;          &quot;Event conflicts with existing event&quot;);
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    events.add(event);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  /**
+&nbsp;   * Checks if an event with the same subject, start date, and start time already exists.
+&nbsp;   *
+&nbsp;   * @param newEvent the event to check
+&nbsp;   * @return true if a matching event exists
+&nbsp;   */
+&nbsp;  private boolean hasDuplicate(Event newEvent) {
+<b class="fc">&nbsp;    for (Event existing : events) {</b>
+<b class="fc">&nbsp;      if (existing.getSubject().equals(newEvent.getSubject())</b>
+&nbsp;          &amp;&amp;
+<b class="fc">&nbsp;          existing.getStartDate().equals(newEvent.getStartDate())) {</b>
+&nbsp;
+<b class="pc">&nbsp;        if (existing.getStartTime() == null &amp;&amp; newEvent.getStartTime() == null) {</b>
+<b class="fc">&nbsp;          return true;</b>
+&nbsp;        }
+&nbsp;
+<b class="pc">&nbsp;        if (existing.getStartTime() != null</b>
+&nbsp;            &amp;&amp;
+<b class="fc">&nbsp;            existing.getStartTime().equals(newEvent.getStartTime())) {</b>
+<b class="fc">&nbsp;          return true;</b>
+&nbsp;        }
+&nbsp;      }
+&nbsp;    }
+<b class="fc">&nbsp;    return false;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  /**
+&nbsp;   * Checks whether the given event has overlapping times with any existing event.
+&nbsp;   *
+&nbsp;   * @param newEvent the event to check
+&nbsp;   * @return true if there&#39;s a time conflict
+&nbsp;   */
+&nbsp;  private boolean hasTimeConflict(Event newEvent) {
+<b class="fc">&nbsp;    for (Event existing : events) {</b>
+<b class="fc">&nbsp;      if (eventsOverlap(existing, newEvent)) {</b>
+<b class="fc">&nbsp;        return true;</b>
+&nbsp;      }
+&nbsp;    }
+<b class="fc">&nbsp;    return false;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  /**
+&nbsp;   * Determines if two events have overlapping time ranges.
+&nbsp;   * All-day events overlap if their date ranges overlap.
+&nbsp;   * Timed events overlap if they occur on overlapping dates and their times intersect.
+&nbsp;   *
+&nbsp;   * @param e1 first event
+&nbsp;   * @param e2 second event
+&nbsp;   * @return true if the events overlap
+&nbsp;   */
+&nbsp;
+&nbsp;  private boolean eventsOverlap(Event e1, Event e2) {
+<b class="fc">&nbsp;    boolean datesOverlap = !e1.getEndDate().isBefore(e2.getStartDate())</b>
+&nbsp;        &amp;&amp;
+<b class="fc">&nbsp;        !e2.getEndDate().isBefore(e1.getStartDate());</b>
+&nbsp;
+<b class="fc">&nbsp;    if (!datesOverlap) {</b>
+<b class="fc">&nbsp;      return false;</b>
+&nbsp;    }
+&nbsp;
+<b class="pc">&nbsp;    if (e1.isAllDay() || e2.isAllDay()) {</b>
+<b class="fc">&nbsp;      return true;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    LocalTime start1 = e1.getStartTime();</b>
+<b class="pc">&nbsp;    LocalTime end1 = e1.getEndTime() != null ? e1.getEndTime() : e1.getStartTime();</b>
+<b class="fc">&nbsp;    LocalTime start2 = e2.getStartTime();</b>
+<b class="pc">&nbsp;    LocalTime end2 = e2.getEndTime() != null ? e2.getEndTime() : e2.getStartTime();</b>
+&nbsp;
+<b class="fc">&nbsp;    return end1.isAfter(start2) &amp;&amp; end2.isAfter(start1);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  /**
+&nbsp;   * Retrieves a specific event by its identifying information.
+&nbsp;   *
+&nbsp;   * @param subject   the event subject
+&nbsp;   * @param startDate the start date
+&nbsp;   * @param startTime the start time, or null for all-day events
+&nbsp;   * @return the matching event, or null if not found
+&nbsp;   */
+&nbsp;  public Event getEvent(String subject, LocalDate startDate, LocalTime startTime) {
+<b class="fc">&nbsp;    for (Event event : events) {</b>
+<b class="fc">&nbsp;      if (event.getSubject().equals(subject)</b>
+&nbsp;          &amp;&amp;
+<b class="pc">&nbsp;          event.getStartDate().equals(startDate)) {</b>
+&nbsp;
+<b class="pc">&nbsp;        if (startTime == null &amp;&amp; event.getStartTime() == null) {</b>
+<b class="fc">&nbsp;          return event;</b>
+&nbsp;        }
+<b class="pc">&nbsp;        if (startTime != null &amp;&amp; startTime.equals(event.getStartTime())) {</b>
+<b class="fc">&nbsp;          return event;</b>
+&nbsp;        }
+&nbsp;      }
+&nbsp;    }
+<b class="fc">&nbsp;    return null;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  /**
+&nbsp;   * Gets all events that occur on the specified date.
+&nbsp;   *
+&nbsp;   * @param date the date to query
+&nbsp;   * @return list of events on that date, possibly empty
+&nbsp;   */
+&nbsp;  public List&lt;Event&gt; getEventsOnDate(LocalDate date) {
+<b class="fc">&nbsp;    List&lt;Event&gt; result = new ArrayList&lt;&gt;();</b>
+<b class="fc">&nbsp;    for (Event event : events) {</b>
+<b class="fc">&nbsp;      if (!event.getEndDate().isBefore(date) &amp;&amp; !event.getStartDate().isAfter(date)) {</b>
+<b class="fc">&nbsp;        result.add(event);</b>
+&nbsp;      }
+&nbsp;    }
+<b class="fc">&nbsp;    return result;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  /**
+&nbsp;   * Checks if the calendar has any events at the specified date and time.
+&nbsp;   *
+&nbsp;   * @param date the date to check
+&nbsp;   * @param time the time to check
+&nbsp;   * @return true if there&#39;s an event at that moment
+&nbsp;   */
+&nbsp;  public boolean isBusy(LocalDate date, LocalTime time) {
+<b class="fc">&nbsp;    for (Event event : events) {</b>
+<b class="pc">&nbsp;      if (!event.getEndDate().isBefore(date) &amp;&amp; !event.getStartDate().isAfter(date)) {</b>
+<b class="fc">&nbsp;        if (event.isAllDay()) {</b>
+<b class="fc">&nbsp;          return true;</b>
+&nbsp;        }
+<b class="pc">&nbsp;        if (time != null &amp;&amp; !time.isBefore(event.getStartTime())</b>
+&nbsp;            &amp;&amp;
+<b class="fc">&nbsp;            time.isBefore(event.getEndTime())) {</b>
+<b class="fc">&nbsp;          return true;</b>
+&nbsp;        }
+&nbsp;      }
+&nbsp;    }
+<b class="fc">&nbsp;    return false;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  /**
+&nbsp;   * Gets the title of this calendar.
+&nbsp;   *
+&nbsp;   * @return the calendar title
+&nbsp;   */
+&nbsp;  public String getTitle() {
+<b class="fc">&nbsp;    return title;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  /**
+&nbsp;   * Gets all events in this calendar.
+&nbsp;   *
+&nbsp;   * @return a copy of the events list
+&nbsp;   */
+&nbsp;  public List&lt;Event&gt; getEvents() {
+<b class="fc">&nbsp;    return new ArrayList&lt;&gt;(events);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  /**
+&nbsp;   * Exports all events in this calendar to a CSV file in Google Calendar format.
+&nbsp;   * The generated file can be imported directly into Google Calendar.
+&nbsp;   * Note: This method was generated with assistance from Claude AI as permitted
+&nbsp;   * by the assignment instructions for CSV export functionality.
+&nbsp;   *
+&nbsp;   * @param filename the path where the CSV file should be saved
+&nbsp;   * @throws IOException if there&#39;s an error writing to the file
+&nbsp;   */
+&nbsp;
+&nbsp;  public void exportToCsv(String filename) throws IOException {
+<b class="fc">&nbsp;    try (PrintWriter writer = new PrintWriter(new FileWriter(filename))) {</b>
+&nbsp;      // Write the header row that Google Calendar expects
+<b class="fc">&nbsp;      writer.println(&quot;Subject,Start Date,Start Time,End Date,End Time,All Day Event,&quot;</b>
+&nbsp;          + &quot;Description,Location,Private&quot;);
+&nbsp;
+&nbsp;      // Write each event as a row
+<b class="fc">&nbsp;      for (Event event : events) {</b>
+<b class="fc">&nbsp;        String subject = escapeCsv(event.getSubject());</b>
+<b class="fc">&nbsp;        String startDate = event.getStartDate().format(DateTimeFormatter.ofPattern(&quot;MM/dd/yyyy&quot;));</b>
+<b class="fc">&nbsp;        String startTime = event.getStartTime() != null</b>
+<b class="fc">&nbsp;            ? event.getStartTime().format(DateTimeFormatter.ofPattern(&quot;hh:mm a&quot;)) : &quot;&quot;;</b>
+<b class="fc">&nbsp;        String endDate = event.getEndDate().format(DateTimeFormatter.ofPattern(&quot;MM/dd/yyyy&quot;));</b>
+<b class="fc">&nbsp;        String endTime = event.getEndTime() != null</b>
+<b class="fc">&nbsp;            ? event.getEndTime().format(DateTimeFormatter.ofPattern(&quot;hh:mm a&quot;)) : &quot;&quot;;</b>
+<b class="fc">&nbsp;        String allDay = event.isAllDay() ? &quot;True&quot; : &quot;False&quot;;</b>
+&nbsp;        String description =
+<b class="fc">&nbsp;            event.getDescription() != null ? escapeCsv(event.getDescription()) : &quot;&quot;;</b>
+<b class="fc">&nbsp;        String location = event.getLocation() != null ? escapeCsv(event.getLocation()) : &quot;&quot;;</b>
+<b class="fc">&nbsp;        String isPrivate = event.getVisibility() == Visibility.PRIVATE ? &quot;True&quot; : &quot;False&quot;;</b>
+&nbsp;
+<b class="fc">&nbsp;        writer.printf(&quot;%s,%s,%s,%s,%s,%s,%s,%s,%s%n&quot;,</b>
+&nbsp;            subject, startDate, startTime, endDate, endTime,
+&nbsp;            allDay, description, location, isPrivate);
+&nbsp;      }
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  /**
+&nbsp;   * Adds a recurring event by generating individual instances based on the pattern.
+&nbsp;   * This creates separate calendar entries for each occurrence
+&nbsp;   *
+&nbsp;   * @param template an example event that defines the subject, times, and other details
+&nbsp;   * @param pattern  specifies which days to repeat on and when to stop
+&nbsp;   * @throws IllegalArgumentException if any generated instance would create a conflict
+&nbsp;   */
+&nbsp;  public void addRecurringEvent(Event template, RecurrencePattern pattern) {
+<b class="fc">&nbsp;    String seriesId = java.util.UUID.randomUUID().toString();  // This line generates a unique ID</b>
+<b class="fc">&nbsp;    LocalDate date = template.getStartDate();</b>
+<b class="fc">&nbsp;    int count = 0;</b>
+&nbsp;
+<b class="fc">&nbsp;    while (shouldContinueRecurrence(count, date, pattern)) {</b>
+<b class="fc">&nbsp;      if (pattern.getDaysOfWeek().contains(date.getDayOfWeek())) {</b>
+<b class="fc">&nbsp;        Event instance = new Event.Builder(template.getSubject(), date, date)</b>
+<b class="fc">&nbsp;            .startTime(template.getStartTime())</b>
+<b class="fc">&nbsp;            .endTime(template.getEndTime())</b>
+<b class="fc">&nbsp;            .location(template.getLocation())</b>
+<b class="fc">&nbsp;            .description(template.getDescription())</b>
+<b class="fc">&nbsp;            .visibility(template.getVisibility())</b>
+<b class="fc">&nbsp;            .recurringSeriesId(seriesId)</b>
+<b class="fc">&nbsp;            .build();</b>
+&nbsp;
+<b class="fc">&nbsp;        addEvent(instance);</b>
+<b class="fc">&nbsp;        count++;</b>
+&nbsp;      }
+<b class="fc">&nbsp;      date = date.plusDays(1);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  /**
+&nbsp;   * Checks whether we should keep generating more recurring event instances.
+&nbsp;   * Stops when we hit either the occurrence limit or the end date, whichever comes first.
+&nbsp;   *
+&nbsp;   * @param count   how many instances we&#39;ve created so far
+&nbsp;   * @param date    what date we&#39;re currently looking at
+&nbsp;   * @param pattern the pattern that defines our stopping conditions
+&nbsp;   * @return true if we should keep going, false if we&#39;ve hit a limit
+&nbsp;   */
+&nbsp;  private boolean shouldContinueRecurrence(int count, LocalDate date, RecurrencePattern pattern) {
+<b class="fc">&nbsp;    if (pattern.getOccurrenceLimit() != null &amp;&amp; count &gt;= pattern.getOccurrenceLimit()) {</b>
+<b class="fc">&nbsp;      return false;</b>
+&nbsp;    }
+<b class="fc">&nbsp;    if (pattern.getEndDate() != null &amp;&amp; date.isAfter(pattern.getEndDate())) {</b>
+<b class="fc">&nbsp;      return false;</b>
+&nbsp;    }
+<b class="fc">&nbsp;    return true;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  /**
+&nbsp;   * Updates a single event that&#39;s part of a recurring series.
+&nbsp;   * Only this one occurrence changes - the rest of the series stays the same.
+&nbsp;   *
+&nbsp;   * @param subject subject of the event to change
+&nbsp;   * @param date    the specific date of the occurrence
+&nbsp;   * @param time    the start time, or null if all-day
+&nbsp;   * @param updated the new version of this event
+&nbsp;   * @throws IllegalArgumentException if event not found or update creates conflict
+&nbsp;   */
+&nbsp;  public void updateSingleEvent(String subject, LocalDate date, LocalTime time, Event updated) {
+<b class="fc">&nbsp;    Event original = getEvent(subject, date, time);</b>
+<b class="fc">&nbsp;    if (original == null) {</b>
+<b class="fc">&nbsp;      throw new IllegalArgumentException(&quot;Cannot find event to update&quot;);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    events.remove(original);</b>
+&nbsp;
+&nbsp;    try {
+<b class="fc">&nbsp;      addEvent(updated);</b>
+&nbsp;    } catch (IllegalArgumentException e) {
+<b class="fc">&nbsp;      events.add(original);</b>
+&nbsp;      throw e;
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  /**
+&nbsp;   * Updates all events in a recurring series with new details.
+&nbsp;   * Finds every event that shares the given series ID and applies the changes.
+&nbsp;   *
+&nbsp;   * @param seriesId   the ID linking the recurring events together
+&nbsp;   * @param newDetails the updated event information to apply
+&nbsp;   */
+&nbsp;  public void updateRecurringSeries(String seriesId, Event newDetails) {
+<b class="fc">&nbsp;    List&lt;Event&gt; toChange = new ArrayList&lt;&gt;();</b>
+&nbsp;
+<b class="fc">&nbsp;    for (Event event : events) {</b>
+<b class="pc">&nbsp;      if (seriesId != null &amp;&amp; seriesId.equals(event.getRecurringSeriesId())) {</b>
+<b class="fc">&nbsp;        toChange.add(event);</b>
+&nbsp;      }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    for (Event old : toChange) {</b>
+<b class="fc">&nbsp;      events.remove(old);</b>
+&nbsp;
+<b class="fc">&nbsp;      Event updated = new Event.Builder(newDetails.getSubject(),</b>
+<b class="fc">&nbsp;          old.getStartDate(), old.getStartDate())</b>
+<b class="fc">&nbsp;          .startTime(newDetails.getStartTime())</b>
+<b class="fc">&nbsp;          .endTime(newDetails.getEndTime())</b>
+<b class="fc">&nbsp;          .location(newDetails.getLocation())</b>
+<b class="fc">&nbsp;          .description(newDetails.getDescription())</b>
+<b class="fc">&nbsp;          .visibility(newDetails.getVisibility())</b>
+<b class="fc">&nbsp;          .recurringSeriesId(seriesId)</b>
+<b class="fc">&nbsp;          .build();</b>
+&nbsp;
+<b class="fc">&nbsp;      events.add(updated);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  /**
+&nbsp;   * Updates all future instances in a recurring series starting from a specific date.
+&nbsp;   * Events before this date stay unchanged, but this date and all future occurrences
+&nbsp;   * get the new details.
+&nbsp;   *
+&nbsp;   * @param seriesId   the ID of the recurring series
+&nbsp;   * @param fromDate   the date to start applying changes (inclusive)
+&nbsp;   * @param newDetails the updated event information
+&nbsp;   */
+&nbsp;  public void updateRecurringFromDate(String seriesId, LocalDate fromDate, Event newDetails) {
+<b class="fc">&nbsp;    List&lt;Event&gt; toChange = new ArrayList&lt;&gt;();</b>
+&nbsp;
+<b class="fc">&nbsp;    for (Event event : events) {</b>
+<b class="pc">&nbsp;      if (seriesId.equals(event.getRecurringSeriesId())</b>
+&nbsp;          &amp;&amp;
+<b class="fc">&nbsp;          !event.getStartDate().isBefore(fromDate)) {</b>
+<b class="fc">&nbsp;        toChange.add(event);</b>
+&nbsp;      }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    for (Event old : toChange) {</b>
+<b class="fc">&nbsp;      events.remove(old);</b>
+&nbsp;
+<b class="fc">&nbsp;      Event updated = new Event.Builder(newDetails.getSubject(),</b>
+<b class="fc">&nbsp;          old.getStartDate(), old.getStartDate())</b>
+<b class="fc">&nbsp;          .startTime(newDetails.getStartTime())</b>
+<b class="fc">&nbsp;          .endTime(newDetails.getEndTime())</b>
+<b class="fc">&nbsp;          .location(newDetails.getLocation())</b>
+<b class="fc">&nbsp;          .description(newDetails.getDescription())</b>
+<b class="fc">&nbsp;          .visibility(newDetails.getVisibility())</b>
+<b class="fc">&nbsp;          .recurringSeriesId(seriesId)</b>
+<b class="fc">&nbsp;          .build();</b>
+&nbsp;
+<b class="fc">&nbsp;      events.add(updated);</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;
+&nbsp;  /**
+&nbsp;   * Escapes special characters in CSV fields by wrapping in quotes when needed.
+&nbsp;   * Note: Helper method for CSV export, created with Claude AI assistance.
+&nbsp;   *
+&nbsp;   * @param value the string value to escape
+&nbsp;   * @return the escaped value safe for CSV format
+&nbsp;   */
+&nbsp;  private String escapeCsv(String value) {
+<b class="pc">&nbsp;    if (value == null) {</b>
+<b class="nc">&nbsp;      return &quot;&quot;;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    String escaped = value.replace(&quot;\&quot;&quot;, &quot;\&quot;\&quot;&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;    if (escaped.contains(&quot;,&quot;) || escaped.contains(&quot;\&quot;&quot;) || escaped.contains(&quot;\n&quot;)) {</b>
+<b class="fc">&nbsp;      return &quot;\&quot;&quot; + escaped + &quot;\&quot;&quot;;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    return escaped;</b>
+&nbsp;  }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-05 01:15</div>
+</div>
+</body>
+</html>
