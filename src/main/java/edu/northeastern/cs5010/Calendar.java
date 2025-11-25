@@ -66,12 +66,7 @@ public class Calendar {
     announceEventAdded(event);
   }
 
-  /**
-   * Checks if an event with the same subject, start date, and start time already exists.
-   *
-   * @param newEvent the event to check
-   * @return true if a matching event exists
-   */
+  // Checks if event with same subject, date, and time exists
   private boolean hasDuplicate(Event newEvent) {
     for (Event existing : events) {
       if (existing.getSubject().equals(newEvent.getSubject())
@@ -92,12 +87,7 @@ public class Calendar {
     return false;
   }
 
-  /**
-   * Checks whether the given event has overlapping times with any existing event.
-   *
-   * @param newEvent the event to check
-   * @return true if there's a time conflict
-   */
+  // Checks if event has overlapping times with any existing event
   private boolean hasTimeConflict(Event newEvent) {
     for (Event existing : events) {
       if (eventsOverlap(existing, newEvent)) {
@@ -107,16 +97,7 @@ public class Calendar {
     return false;
   }
 
-  /**
-   * Determines if two events have overlapping time ranges.
-   * All-day events overlap if their date ranges overlap.
-   * Timed events overlap if they occur on overlapping dates and their times intersect.
-   *
-   * @param e1 first event
-   * @param e2 second event
-   * @return true if the events overlap
-   */
-
+  // Determines if two events have overlapping time ranges
   private boolean eventsOverlap(Event e1, Event e2) {
     boolean datesOverlap = !e1.getEndDate().isBefore(e2.getStartDate())
         &&
@@ -317,15 +298,7 @@ public class Calendar {
     }
   }
 
-  /**
-   * Checks whether we should keep generating more recurring event instances.
-   * Stops when we hit either the occurrence limit or the end date, whichever comes first.
-   *
-   * @param count   how many instances we've created so far
-   * @param date    what date we're currently looking at
-   * @param pattern the pattern that defines our stopping conditions
-   * @return true if we should keep going, false if we've hit a limit
-   */
+  // Checks if we should continue generating recurring instances
   private boolean shouldContinueRecurrence(int count, LocalDate date, RecurrencePattern pattern) {
     if (pattern.getOccurrenceLimit() != null && count >= pattern.getOccurrenceLimit()) {
       return false;
@@ -478,13 +451,7 @@ public class Calendar {
     }
   }
 
-  /**
-   * Escapes special characters in CSV fields by wrapping in quotes when needed.
-   * Note: Helper method for CSV export, created with Claude AI assistance.
-   *
-   * @param value the string value to escape
-   * @return the escaped value safe for CSV format
-   */
+  // Escapes special characters in CSV fields by wrapping in quotes when needed
   private String escapeCsv(String value) {
     if (value == null) {
       return "";
