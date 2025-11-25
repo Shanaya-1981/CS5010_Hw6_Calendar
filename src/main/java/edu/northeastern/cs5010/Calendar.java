@@ -7,7 +7,9 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents a calendar that holds events and enforces uniqueness rules.
@@ -19,6 +21,7 @@ public class Calendar {
   private final List<Event> events;
   private final boolean allowConflicts;
   private List<CalendarListener> listeners;
+  private final Map<String, Event> eventsByKey;
 
   /**
    * Creates a new calendar with the given title.
@@ -41,6 +44,7 @@ public class Calendar {
     this.allowConflicts = allowConflicts;
     this.events = new ArrayList<>();
     this.listeners = new ArrayList<>();
+    this.eventsByKey = new HashMap<>();
   }
 
   /**
@@ -63,28 +67,19 @@ public class Calendar {
     }
 
     events.add(event);
+    eventsByKey.put(generateEventKey(event), event);
     announceEventAdded(event);
   }
 
-  // Checks if event with same subject, date, and time exists
+  // Generates unique key for duplicate detection: subject+date+time
+  private String generateEventKey(Event event) {
+    String timeKey = event.getStartTime() != null ? event.getStartTime().toString() : "ALLDAY";
+    return event.getSubject() + "|" + event.getStartDate() + "|" + timeKey;
+  }
+
+  // Checks if event with same subject, date, and time already exists
   private boolean hasDuplicate(Event newEvent) {
-    for (Event existing : events) {
-      if (existing.getSubject().equals(newEvent.getSubject())
-          &&
-          existing.getStartDate().equals(newEvent.getStartDate())) {
-
-        if (existing.getStartTime() == null && newEvent.getStartTime() == null) {
-          return true;
-        }
-
-        if (existing.getStartTime() != null
-            &&
-            existing.getStartTime().equals(newEvent.getStartTime())) {
-          return true;
-        }
-      }
-    }
-    return false;
+    return eventsByKey.containsKey(generateEventKey(newEvent));
   }
 
   // Checks if event has overlapping times with any existing event
@@ -326,12 +321,14 @@ public class Calendar {
     }
 
     events.remove(original);
+    eventsByKey.remove(generateEventKey(original));
 
     try {
       addEvent(updated);
       announceEventModified(updated);
     } catch (IllegalArgumentException e) {
       events.add(original);
+      eventsByKey.put(generateEventKey(original), original);
       throw e;
     }
   }
