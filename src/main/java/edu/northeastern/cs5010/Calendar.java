@@ -171,7 +171,7 @@ public class Calendar {
   public boolean getAllowConflicts() {
     return allowConflicts;
   }
-  
+
   /**
    * Gets all events that occur on the specified date.
    *
@@ -269,17 +269,20 @@ public class Calendar {
 
   /**
    * Adds a recurring event by generating individual instances based on the pattern.
-   * This creates separate calendar entries for each occurrence
+   * Validates all instances before adding any to ensure atomicity. If one instance
+   * would create a conflict or duplicate, none are added.
    *
    * @param template an example event that defines the subject, times, and other details
    * @param pattern  specifies which days to repeat on and when to stop
-   * @throws IllegalArgumentException if any generated instance would create a conflict
+   * @throws IllegalArgumentException if any generated instance would create a conflict or duplicate
    */
   public void addRecurringEvent(Event template, RecurrencePattern pattern) {
-    String seriesId = java.util.UUID.randomUUID().toString();  // This line generates a unique ID
+    String seriesId = java.util.UUID.randomUUID().toString();
+    List<Event> instances = new ArrayList<>();
     LocalDate date = template.getStartDate();
     int count = 0;
 
+    // Phase 1: Generate and validate all instances
     while (shouldContinueRecurrence(count, date, pattern)) {
       if (pattern.getDaysOfWeek().contains(date.getDayOfWeek())) {
         Event instance = new Event.Builder(template.getSubject(), date, date)
@@ -291,10 +294,26 @@ public class Calendar {
             .recurringSeriesId(seriesId)
             .build();
 
-        addEvent(instance);
+        // Validate without adding yet
+        if (hasDuplicate(instance)) {
+          throw new IllegalArgumentException(
+              "Recurring event would create duplicate at " + date);
+        }
+        if (!allowConflicts && hasTimeConflict(instance)) {
+          throw new IllegalArgumentException(
+              "Recurring event would create conflict at " + date);
+        }
+
+        instances.add(instance);
         count++;
       }
       date = date.plusDays(1);
+    }
+
+    // Phase 2: All validated, now add them
+    for (Event instance : instances) {
+      events.add(instance);
+      announceEventAdded(instance);
     }
   }
 
